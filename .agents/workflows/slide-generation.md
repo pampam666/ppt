@@ -1,3 +1,7 @@
+---
+description: The Power Design workflow automates slide creation by loading rules, resolving brand DNA, applying 20 design principles, planning architecture, and generating a self-contained HTML deck with an iterative refinement loop for quality.
+---
+
 # Workflow — Slide Generation
 # Location: <workspace>/.agents/workflows/slide-generation.md
 # Trigger: User requests slide/deck/presentation generation using power-design skill

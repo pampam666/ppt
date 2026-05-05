@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Rules — Power Design Skill
 # Location: <workspace>/.agents/rules/power-design.md
 # Scope: Applies whenever the agent uses the power-design skill for slide generation
