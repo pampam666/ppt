@@ -1,10 +1,10 @@
 ---
-description: The Power Design workflow automates slide creation by loading rules, resolving brand DNA, applying 20 design principles, planning architecture, and generating a self-contained HTML deck with an iterative refinement loop for quality.
+description: The Power Design workflow automates slide creation by loading rules, resolving brand DNA, applying 20 design principles, ingesting prepared data, synthesizing structure, and generating a self-contained HTML deck with an iterative refinement loop for quality.
 ---
 
 # Workflow — Slide Generation
 # Location: <workspace>/.agents/workflows/slide-generation.md
-# Trigger: User requests slide/deck/presentation generation using power-design skill
+# Trigger: User requests slide/deck/presentation generation using power-design skill after preparation flow is complete
 
 ---
 
@@ -13,7 +13,7 @@ description: The Power Design workflow automates slide creation by loading rules
 ```
 name: slide-generation
 skill: power-design
-version: 1.0.0
+version: 1.1.0
 model_recommendation: claude-sonnet-4
 trigger_phrases:
   - "use power-design"
@@ -37,9 +37,9 @@ START
   │
   ├─ STEP 3: Load Design Principles
   │
-  ├─ STEP 4: Gather Content Brief
+  ├─ STEP 4: Ingest Preparation Data
   │
-  ├─ STEP 5: Plan Slide Architecture
+  ├─ STEP 5: Synthesize Content & Architecture
   │
   ├─ STEP 6: Generate slides.html
   │
@@ -158,48 +158,41 @@ READ: <workspace>/.agents/skills/power-design/principles/design-principles.md
 
 ---
 
-## STEP 4 — Gather Content Brief
+## STEP 4 — Ingest Preparation Data
 
-**Action:** Ask the user for content input. Use a MAXIMUM of 3 questions:
+**Action:** Read the presentation data generated during the slide preparation phase from the strict folder structure. Determine the `<presentation-title>` from the user's request.
 
 ```
-Questions (ask in a single message, all at once):
-
-1. What is the presentation about?
-   (headline + 3–5 key points is sufficient; full content optional)
-
-2. How many slides? (or say "you decide")
-
-3. Any specific slide types needed?
-   (e.g., title slide, data chart, timeline, comparison, quote, CTA)
+READ: <workspace>/slide/<presentation-title>/docs/prd/ (Extract Goals & Target Audience)
+READ: <workspace>/slide/<presentation-title>/docs/product/ (Extract product features and details)
+READ: <workspace>/slide/<presentation-title>/src/structure/ (Read the user-selected structure option and image manifest)
 ```
 
-**If user already provided content in their initial request:** Skip this step entirely.
-Extract content from the request and proceed.
+**If user provides no existing folder structure:** Halt and ask the user if they want to run the `/slide-preparation-flow` first or provide content manually.
 
-**Observation:** Content brief is complete when:
-- A topic/headline exists
-- At least 3 key points are defined (or user approves agent-generated points)
-- Slide count is determined (agent defaults to 5–7 if not specified)
+**Observation:** Data ingestion is complete when:
+- The PRD (goals & audience) is understood
+- Product details are extracted
+- The specific chosen slide structure (from `src/structure/`) and image assets (from `image-manifest.md` or attachments) are mapped
 
 ---
 
-## STEP 5 — Plan Slide Architecture
+## STEP 5 — Synthesize Content & Architecture
 
-**Action:** Before writing any HTML, plan the slide sequence:
+**Action:** Before writing any HTML, synthesize the ingested PRD, product details, and the selected structure to formulate the exact content and slide sequence.
 
 ```
-Think through this structure:
+Think through this structure ensuring alignment with the selected structure option:
 
 Slide 1:  Title Slide — [Headline] + [Brand logo position] + [Subtitle]
-Slide 2:  Problem / Context — [Key insight or opening statement]
-Slide N:  [Content slides — one idea each]
-Slide N+1: Data / Evidence — [Chart or key stat, if applicable]
+Slide 2:  Problem / Context — [Key insight from PRD/Product]
+Slide N:  [Content slides — one idea each based on selected structure]
+Slide N+1: Data / Evidence / Visuals — [Map images from image-manifest.md]
 Last Slide: CTA / Summary — [Single clear action or takeaway]
 ```
 
-Output the plan to the user as a numbered list:
-> "Here's the slide plan I'll build. Reply to adjust before I generate:"
+Output the synthesized plan to the user as a numbered list:
+> "Here's the synthesized slide plan based on the selected structure. Reply to adjust before I generate:"
 > 1. Title — [headline]
 > 2. [etc.]
 
@@ -264,16 +257,17 @@ Do not deliver a slide that fails any audit check.
 
 ## STEP 8 — Deliver Output
 
-**Action:** Write the final HTML to disk and confirm delivery:
+**Action:** Write the final HTML to disk strictly inside the `<workspace>/slide/<presentation-title>/output/` directory and confirm delivery. Do NOT output to the root directory or anywhere else.
 
 ```
-OUTPUT: slides.html → current working directory
+OUTPUT: slides.html → <workspace>/slide/<presentation-title>/output/slides.html
 ```
 
 Deliver to user with this summary:
 ```
 ✅ slides.html generated
 
+Destination: slide/<presentation-title>/output/slides.html
 Brand: [brand name] ([source: URL | library | template])
 Mode: [Tufte | Reynolds]
 Slides: [N] slides
@@ -302,7 +296,7 @@ Tell me what to change and I'll update it.
 | "Start over" | Return to STEP 4 |
 | "Done" / "Ship it" | Exit workflow |
 
-**Output updated `slides.html` after every refinement round.**
+**Output updated `slides.html` to the `output/` directory after every refinement round.**
 
 ---
 
@@ -328,13 +322,13 @@ The following JSON object tracks state across workflow steps:
   },
   "design_mode": "tufte | reynolds | null",
   "content_brief": {
-    "headline": "string",
-    "key_points": ["string"],
-    "slide_count": 0,
-    "slide_types": ["string"]
+    "prd_goals": ["string"],
+    "target_audience": "string",
+    "product_details": ["string"],
+    "selected_structure": "string"
   },
   "slide_plan": ["string"],
-  "output_file": "slides.html",
+  "output_file": "slide/<presentation-title>/output/slides.html",
   "audit_passed": true,
   "refinement_round": 0,
   "errors": [],
