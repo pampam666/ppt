@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Rules — Slide Preparation
 # Location: <workspace>/.agents/rules/slide-preparation.md
 # Scope: Applies to every agent operating within the slide-preparation-flow workflow

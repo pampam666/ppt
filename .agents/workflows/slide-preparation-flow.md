@@ -1,3 +1,7 @@
+---
+description: The Slide Preparation Flow automates deck creation by extracting PDF data, analyzing PRD context, generating three structure options, gathering relevant visuals via Tavily or attachments, and invoking the Power Design skill for final HTML output.
+---
+
 # Workflow — Slide Preparation Flow
 # Location: <workspace>/.agents/workflows/slide-preparation-flow.md
 # Trigger: /slide-preparation-flow
